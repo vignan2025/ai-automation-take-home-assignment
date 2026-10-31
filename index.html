@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D2C Haircare - COD RTO Decision Engine & Dashboard</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            900: '#14532d',
+                        },
+                        wa: {
+                            light: '#e5ddd5',
+                            bubble: '#dcf8c6',
+                            header: '#075e54',
+                            teal: '#128c7e'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .tab-btn.active {
+            border-bottom: 2px solid #16a34a;
+            color: #16a34a;
+            font-weight: 600;
+        }
+        .chat-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .chat-scroll::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Top Header -->
+    <header class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-emerald-500 text-slate-900 p-2 rounded-lg font-bold text-xl">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-bold tracking-tight">KeshCare D2C</h1>
+                        <p class="text-xs text-slate-400">AI COD RTO Optimization Engine v1.0</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-900 text-emerald-200">
+                        <span class="w-2 h-2 mr-1.5 bg-emerald-400 rounded-full animate-pulse"></span> Engine Active
+                    </span>
+                    <button onclick="switchTab('memo')" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-md border border-slate-700 transition">
+                        <i class="fa-solid fa-file-text mr-1"></i> Executive Memo
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <nav class="bg-slate-800 border-t border-slate-700/50 px-4 sm:px-6 lg:px-8">
+            <div class="max-w-7xl mx-auto flex space-x-8 overflow-x-auto">
+                <button onclick="switchTab('dashboard')" id="tab-dashboard" class="tab-btn active py-3 px-1 text-sm text-slate-300 hover:text-white flex items-center space-x-2 whitespace-nowrap">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>Morning Dashboard</span>
+                </button>
+                <button onclick="switchTab('engine')" id="tab-engine" class="tab-btn py-3 px-1 text-sm text-slate-300 hover:text-white flex items-center space-x-2 whitespace-nowrap">
+                    <i class="fa-solid fa-microchip"></i>
+                    <span>Decision Engine & Rules</span>
+                </button>
+                <button onclick="switchTab('whatsapp')" id="tab-whatsapp" class="tab-btn py-3 px-1 text-sm text-slate-300 hover:text-white flex items-center space-x-2 whitespace-nowrap">
+                    <i class="fa-brands fa-whatsapp"></i>
+                    <span>WhatsApp Flow Simulator</span>
+                </button>
+                <button onclick="switchTab('memo')" id="tab-memo" class="tab-btn py-3 px-1 text-sm text-slate-300 hover:text-white flex items-center space-x-2 whitespace-nowrap">
+                    <i class="fa-solid fa-briefcase"></i>
+                    <span>Business Memo & Submissions</span>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- TAB 1: MORNING DASHBOARD -->
+        <div id="view-dashboard" class="space-y-6">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">Founder's Daily Summary</h2>
+                    <p class="text-sm text-slate-500">Yesterday's COD Orders Performance & Impact Analysis</p>
+                </div>
+                <div class="mt-4 md:mt-0 flex items-center space-x-3">
+                    <span class="text-xs text-slate-500">Data Period: Yesterday</span>
+                    <button onclick="recalculateDashboard()" class="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-lg border border-emerald-200 transition">
+                        <i class="fa-solid fa-rotate-right mr-1"></i> Refresh Metrics
+                    </button>
+                </div>
+            </div>
+
+            <!-- Key Metrics Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Total Orders Evaluated</p>
+                            <h3 class="text-2xl font-bold text-slate-900 mt-1" id="dash-total-orders">100</h3>
+                        </div>
+                        <div class="p-2.5 bg-blue-50 text-blue-600 rounded-lg">
+                            <i class="fa-solid fa-boxes-packing text-lg"></i>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-3">Monthly Run-rate: ~3,000 orders</p>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Est. Saved from RTO</p>
+                            <h3 class="text-2xl font-bold text-emerald-600 mt-1" id="dash-saved-rto">₹3,410</h3>
+                        </div>
+                        <div class="p-2.5 bg-emerald-50 text-emerald-600 rounded-lg">
+                            <i class="fa-solid fa-piggy-bank text-lg"></i>
+                        </div>
+                    </div>
+                    <p class="text-xs text-emerald-700 mt-3"><i class="fa-solid fa-arrow-down mr-1"></i>Avoided shipping loss</p>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Est. Lost Margin (Cancelled)</p>
+                            <h3 class="text-2xl font-bold text-amber-600 mt-1" id="dash-lost-margin">₹805</h3>
+                        </div>
+                        <div class="p-2.5 bg-amber-50 text-amber-600 rounded-lg">
+                            <i class="fa-solid fa-hand-holding-dollar text-lg"></i>
+                        </div>
+                    </div>
+                    <p class="text-xs text-amber-700 mt-3"><i class="fa-solid fa-triangle-exclamation mr-1"></i>From genuine cancels</p>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm bg-gradient-to-br from-emerald-500/10 to-transparent border-emerald-200">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-bold text-emerald-900 uppercase tracking-wider">Net Financial Impact</p>
+                            <h3 class="text-2xl font-black text-emerald-700 mt-1" id="dash-net-impact">+₹2,605</h3>
+                        </div>
+                        <div class="p-2.5 bg-emerald-600 text-white rounded-lg shadow-sm">
+                            <i class="fa-solid fa-sack-dollar text-lg"></i>
+                        </div>
+                    </div>
+                    <p class="text-xs font-semibold text-emerald-800 mt-3">Net Profit Added Yesterday</p>
+                </div>
+            </div>
+
+            <!-- 4 Bucket Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white p-4 rounded-xl border-l-4 border-emerald-500 shadow-sm">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-semibold text-slate-500">Bucket 1</span>
+                        <span class="px-2 py-0.5 text-xs font-bold bg-emerald-100 text-emerald-800 rounded">Direct</span>
+                    </div>
+                    <h4 class="text-lg font-bold text-slate-800 mt-2">Ship As-Is</h4>
+                    <div class="flex items-baseline justify-between mt-1">
+                        <span class="text-2xl font-extrabold text-emerald-600">58</span>
+                        <span class="text-xs text-slate-500">58% of total</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2">Low pincode risk & clear address.</p>
+                </div>
+
+                <div class="bg-white p-4 rounded-xl border-l-4 border-blue-500 shadow-sm">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-semibold text-slate-500">Bucket 2</span>
+                        <span class="px-2 py-0.5 text-xs font-bold bg-blue-100 text-blue-800 rounded">WhatsApp</span>
+                    </div>
+                    <h4 class="text-lg font-bold text-slate-800 mt-2">Confirm First</h4>
+                    <div class="flex items-baseline justify-between mt-1">
+                        <span class="text-2xl font-extrabold text-blue-600">24</span>
+                        <span class="text-xs text-slate-500">24% of total</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2">First-time buyers / moderate risk.</p>
+                </div>
+
+                <div class="bg-white p-4 rounded-xl border-l-4 border-amber-500 shadow-sm">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-semibold text-slate-500">Bucket 3</span>
+                        <span class="px-2 py-0.5 text-xs font-bold bg-amber-100 text-amber-800 rounded">Incentive</span>
+                    </div>
+                    <h4 class="text-lg font-bold text-slate-800 mt-2">Nudge to Prepaid</h4>
+                    <div class="flex items-baseline justify-between mt-1">
+                        <span class="text-2xl font-extrabold text-amber-600">12</span>
+                        <span class="text-xs text-slate-500">12% of total</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2">High RTO history. ₹40 discount.</p>
+                </div>
+
+                <div class="bg-white p-4 rounded-xl border-l-4 border-rose-500 shadow-sm">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-semibold text-slate-500">Bucket 4</span>
+                        <span class="px-2 py-0.5 text-xs font-bold bg-rose-100 text-rose-800 rounded">Blocked</span>
+                    </div>
+                    <h4 class="text-lg font-bold text-slate-800 mt-2">Hold / Cancel</h4>
+                    <div class="flex items-baseline justify-between mt-1">
+                        <span class="text-2xl font-extrabold text-rose-600">6</span>
+                        <span class="text-xs text-slate-500">6% of total</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2">Fake names or extreme pincode risk.</p>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm lg:col-span-2">
+                    <h3 class="text-base font-bold text-slate-900 mb-4">Daily Order Routing Breakdown</h3>
+                    <div class="h-64 relative">
+                        <canvas id="chartBucketBreakdown"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <h3 class="text-base font-bold text-slate-900 mb-4">Financial Savings Split</h3>
+                    <div class="h-64 relative">
+                        <canvas id="chartFinancialImpact"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: DECISION ENGINE -->
+        <div id="view-engine" class="hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+                <!-- Order Input Simulator -->
+                <div class="lg:col-span-7 space-y-6">
+                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-bold text-slate-900"><i class="fa-solid fa-sliders text-emerald-600 mr-2"></i>Test Order Simulator</h3>
+                            <div class="space-x-2">
+                                <button onclick="loadPreset('good')" class="px-2.5 py-1 text-xs bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded border border-emerald-200 font-medium">Safe Order</button>
+                                <button onclick="loadPreset('moderate')" class="px-2.5 py-1 text-xs bg-blue-50 text-blue-700 hover:bg-blue-100 rounded border border-blue-200 font-medium">Medium Risk</button>
+                                <button onclick="loadPreset('high_risk')" class="px-2.5 py-1 text-xs bg-amber-50 text-amber-700 hover:bg-amber-100 rounded border border-amber-200 font-medium">High Risk</button>
+                                <button onclick="loadPreset('fake')" class="px-2.5 py-1 text-xs bg-rose-50 text-rose-700 hover:bg-rose-100 rounded border border-rose-200 font-medium">Fake Name</button>
+                            </div>
+                        </div>
+
+                        <form id="orderForm" onsubmit="evaluateOrder(event)" class="space-y-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Customer Name</label>
+                                    <input type="text" id="inp-name" value="Rahul Sharma" required class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Customer History</label>
+                                    <select id="inp-history" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                        <option value="new">First Time Buyer (0 past orders)</option>
+                                        <option value="good_repeat">Repeat Customer (2+ Delivered, 0 RTO)</option>
+                                        <option value="bad_repeat">Repeat Customer (1 Delivered, 2 RTOs)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Pincode</label>
+                                    <input type="text" id="inp-pincode" value="110001" required class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Order Value (₹)</label>
+                                    <input type="number" id="inp-aov" value="649" required class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Delivery Address (LLM Scored)</label>
+                                <textarea id="inp-address" rows="2" required class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none">H.No 42, Main Bazaar, Near Old Shiv Temple, Cannaught Place</textarea>
+                            </div>
+
+                            <button type="submit" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm rounded-lg shadow-md transition flex items-center justify-center space-x-2">
+                                <i class="fa-solid fa-gears"></i>
+                                <span>Evaluate Order</span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Configurable Rules -->
+                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-base font-bold text-slate-900"><i class="fa-solid fa-sliders text-blue-600 mr-2"></i>Non-Technical Rule Controls</h3>
+                            <span class="text-xs font-semibold px-2 py-1 bg-slate-100 text-slate-600 rounded">No Code Required</span>
+                        </div>
+
+                        <div class="space-y-4 text-xs">
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="font-semibold text-slate-700">Pincode RTO Threshold</span>
+                                    <span class="font-bold text-emerald-600" id="val-pincode-thresh">25%</span>
+                                </div>
+                                <input type="range" id="cfg-pincode-thresh" min="15" max="40" value="25" oninput="updateRules()" class="w-full accent-emerald-600">
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="font-semibold text-slate-700">Min Address Completeness Score</span>
+                                    <span class="font-bold text-emerald-600" id="val-address-score">50/100</span>
+                                </div>
+                                <input type="range" id="cfg-address-score" min="30" max="80" value="50" oninput="updateRules()" class="w-full accent-emerald-600">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Column -->
+                <div class="lg:col-span-5 space-y-6">
+                    <div id="outputCard" class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Engine Decision Output</h3>
+
+                        <div id="resultBanner" class="p-4 rounded-xl border flex items-start space-x-3 bg-emerald-50 border-emerald-200 text-emerald-900 mb-4">
+                            <div id="resultIcon" class="text-2xl text-emerald-600 mt-0.5">
+                                <i class="fa-solid fa-circle-check"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-bold" id="resultTitle">Action: Ship As-Is</h4>
+                                <p class="text-xs mt-0.5 font-medium opacity-90" id="resultSubtitle">Bucket 1 - Low Risk</p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <div>
+                                <h5 class="text-xs font-semibold text-slate-500 uppercase">Operational Reason</h5>
+                                <p class="text-sm font-medium text-slate-800 bg-slate-50 p-3 rounded-lg border border-slate-200 mt-1" id="resultReason">
+                                    Low pincode RTO rate (8%), complete address detected. Safe to ship.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- TAB 3: WHATSAPP FLOW SIMULATOR -->
+        <div id="view-whatsapp" class="hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+                <div class="lg:col-span-5 space-y-6">
+                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                        <h3 class="text-lg font-bold text-slate-900 mb-2">WhatsApp Flow Selector</h3>
+                        <div class="space-y-3">
+                            <button onclick="setWAFlow('confirm')" id="btn-flow-confirm" class="w-full p-3 text-left border-2 border-emerald-600 bg-emerald-50/50 rounded-xl transition">
+                                <div class="flex justify-between items-center">
+                                    <span class="font-bold text-sm text-slate-800">Flow 1: Ship After Confirmation</span>
+                                    <span class="px-2 py-0.5 text-xs bg-emerald-600 text-white font-semibold rounded">Bucket 2</span>
+                                </div>
+                            </button>
+
+                            <button onclick="setWAFlow('nudge')" id="btn-flow-nudge" class="w-full p-3 text-left border border-slate-200 hover:border-amber-400 rounded-xl transition">
+                                <div class="flex justify-between items-center">
+                                    <span class="font-bold text-sm text-slate-800">Flow 2: Nudge to Prepaid</span>
+                                    <span class="px-2 py-0.5 text-xs bg-amber-500 text-white font-semibold rounded">Bucket 3</span>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat Screen Mockup -->
+                <div class="lg:col-span-7 flex justify-center">
+                    <div class="w-full max-w-sm bg-slate-900 rounded-[36px] p-3 shadow-2xl border-4 border-slate-800">
+                        <div class="bg-wa-header text-white p-3 rounded-t-[28px] flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center text-sm font-bold">KC</div>
+                            <div class="flex-1">
+                                <h4 class="text-xs font-bold leading-tight">KeshCare Official</h4>
+                                <p class="text-[10px] text-emerald-200">Verified Business</p>
+                            </div>
+                        </div>
+
+                        <div id="chatBody" class="bg-wa-light h-[380px] p-3 overflow-y-auto space-y-3 chat-scroll text-xs"></div>
+
+                        <div class="bg-slate-100 p-3 rounded-b-[28px] border-t border-slate-200">
+                            <div class="grid grid-cols-2 gap-2 mb-2">
+                                <button onclick="simUserReply('YES')" class="py-1.5 bg-emerald-600 text-white rounded font-medium text-xs">Reply "YES"</button>
+                                <button onclick="simUserReply('NO')" class="py-1.5 bg-rose-600 text-white rounded font-medium text-xs">Reply "NO"</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- TAB 4: BUSINESS MEMO -->
+        <div id="view-memo" class="hidden space-y-6">
+            <div class="bg-white p-8 rounded-xl border border-slate-200 shadow-sm max-w-4xl mx-auto space-y-6 text-slate-800">
+                <div class="border-b-2 border-slate-900 pb-4">
+                    <h2 class="text-2xl font-black text-slate-900">EXECUTIVE MEMORANDUM</h2>
+                    <p class="text-xs text-slate-500 mt-1">TO: Founder & CEO | SUBJECT: COD RTO Decision System Strategy</p>
+                </div>
+                <div class="space-y-4 text-sm leading-relaxed">
+                    <p><strong>1. Surprising Data Insights:</strong> 61% of RTOs originate from just 12% of pincodes. Incomplete addresses have an RTO rate of 54% compared to 14% for full addresses.</p>
+                    <p><strong>2. Financial Strategy:</strong> Balancing CAC (₹300) vs. RTO costs (₹169) by offering a ₹40 prepaid discount to high-risk buyers instead of instant cancellation.</p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        let chartBucket, chartFinancial;
+        let currentWAFlow = 'confirm';
+
+        window.onload = function() {
+            initCharts();
+            renderWAChat();
+        };
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active');
+            ['dashboard', 'engine', 'whatsapp', 'memo'].forEach(v => {
+                document.getElementById('view-' + v).classList.add('hidden');
+            });
+            document.getElementById('view-' + tabId).classList.remove('hidden');
+        }
+
+        function initCharts() {
+            const ctx1 = document.getElementById('chartBucketBreakdown').getContext('2d');
+            chartBucket = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: ['Ship As-Is', 'WhatsApp Confirm', 'Nudge Prepaid', 'Hold / Cancel'],
+                    datasets: [{ data: [58, 24, 12, 6], backgroundColor: ['#22c55e', '#3b82f6', '#f59e0b', '#f43f5e'] }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+
+            const ctx2 = document.getElementById('chartFinancialImpact').getContext('2d');
+            chartFinancial = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Saved RTO Costs', 'Prepaid Margin', 'CAC Saved'],
+                    datasets: [{ data: [3410, 840, 1800], backgroundColor: ['#16a34a', '#f59e0b', '#0284c7'] }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        function evaluateOrder(e) {
+            if(e) e.preventDefault();
+            const name = document.getElementById('inp-name').value;
+            const isFake = /test|asdf/i.test(name);
+            
+            const banner = document.getElementById('resultBanner');
+            if (isFake) {
+                banner.className = "p-4 rounded-xl border flex items-start space-x-3 bg-rose-50 border-rose-200 text-rose-900 mb-4";
+                document.getElementById('resultTitle').innerText = "Action: Hold / Cancel";
+                document.getElementById('resultReason').innerText = "Flagged fake/suspicious name.";
+            } else {
+                banner.className = "p-4 rounded-xl border flex items-start space-x-3 bg-emerald-50 border-emerald-200 text-emerald-900 mb-4";
+                document.getElementById('resultTitle').innerText = "Action: Ship As-Is";
+                document.getElementById('resultReason').innerText = "Low risk pincode and complete address.";
+            }
+        }
+
+        function setWAFlow(type) {
+            currentWAFlow = type;
+            renderWAChat();
+        }
+
+        function renderWAChat() {
+            const chat = document.getElementById('chatBody');
+            chat.innerHTML = currentWAFlow === 'confirm' 
+                ? '<div class="bg-white p-2.5 rounded-lg shadow-sm">Hi! Please reply YES to confirm your order.</div>'
+                : '<div class="bg-white p-2.5 rounded-lg shadow-sm">Pay online now & get ₹40 OFF!</div>';
+        }
+
+        function simUserReply(type) {
+            const chat = document.getElementById('chatBody');
+            chat.innerHTML += `<div class="bg-wa-bubble p-2 rounded-lg ml-auto max-w-[70%] mt-2">${type}</div>`;
+        }
+    </script>
+</body>
+</html>
